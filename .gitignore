@@ -33,3 +33,5 @@ build/
 .vscode/
 
 *.yml
+!*.yaml.example
+!*.yml.example

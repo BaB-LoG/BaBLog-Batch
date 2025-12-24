@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.bablog.batch.failure.mapper.BatchFailureLogMapper">
+    <insert id="insertFailure">
+        insert into batch_failure_log
+        (job_name, step_name, member_id, target_date, week_start, week_end, error_class, error_message)
+        values
+        (#{jobName}, #{stepName}, #{memberId}, #{targetDate}, #{weekStart}, #{weekEnd}, #{errorClass}, #{errorMessage})
+    </insert>
+</mapper>
