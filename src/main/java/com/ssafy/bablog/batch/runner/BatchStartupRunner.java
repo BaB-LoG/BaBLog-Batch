@@ -22,16 +22,22 @@ public class BatchStartupRunner implements ApplicationRunner {
 
     private final JobLauncher jobLauncher;
     private final Job dailyMealInitJob;
+    private final Job dailyGoalResetJob;
     private final Job dailyReportJob;
+    private final Job weeklyGoalResetJob;
     private final Job weeklyReportJob;
 
     public BatchStartupRunner(JobLauncher jobLauncher,
                               Job dailyMealInitJob,
+                              Job dailyGoalResetJob,
                               Job dailyReportJob,
+                              Job weeklyGoalResetJob,
                               Job weeklyReportJob) {
         this.jobLauncher = jobLauncher;
         this.dailyMealInitJob = dailyMealInitJob;
+        this.dailyGoalResetJob = dailyGoalResetJob;
         this.dailyReportJob = dailyReportJob;
+        this.weeklyGoalResetJob = weeklyGoalResetJob;
         this.weeklyReportJob = weeklyReportJob;
     }
 
@@ -45,8 +51,15 @@ public class BatchStartupRunner implements ApplicationRunner {
         runJob(dailyMealInitJob, new JobParametersBuilder()
                 .addString("targetDate", dailyMealDate.toString())
                 .toJobParameters());
+        runJob(dailyGoalResetJob, new JobParametersBuilder()
+                .addString("targetDate", dailyMealDate.toString())
+                .toJobParameters());
         runJob(dailyReportJob, new JobParametersBuilder()
                 .addString("targetDate", dailyReportDate.toString())
+                .toJobParameters());
+        runJob(weeklyGoalResetJob, new JobParametersBuilder()
+                .addString("weekStart", weekStart.toString())
+                .addString("weekEnd", weekEnd.toString())
                 .toJobParameters());
         runJob(weeklyReportJob, new JobParametersBuilder()
                 .addString("weekStart", weekStart.toString())

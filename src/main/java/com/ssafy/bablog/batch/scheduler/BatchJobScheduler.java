@@ -18,17 +18,31 @@ public class BatchJobScheduler {
 
     private final JobLauncher jobLauncher;
     private final Job dailyMealInitJob;
+    private final Job dailyGoalResetJob;
     private final Job dailyReportJob;
+    private final Job weeklyGoalResetJob;
     private final Job weeklyReportJob;
 
     public BatchJobScheduler(JobLauncher jobLauncher,
                              Job dailyMealInitJob,
+                             Job dailyGoalResetJob,
                              Job dailyReportJob,
+                             Job weeklyGoalResetJob,
                              Job weeklyReportJob) {
         this.jobLauncher = jobLauncher;
         this.dailyMealInitJob = dailyMealInitJob;
+        this.dailyGoalResetJob = dailyGoalResetJob;
         this.dailyReportJob = dailyReportJob;
+        this.weeklyGoalResetJob = weeklyGoalResetJob;
         this.weeklyReportJob = weeklyReportJob;
+    }
+
+    @Scheduled(cron = "0 0 0 * * *")
+    public void runDailyGoalResetJob() {
+        LocalDate targetDate = LocalDate.now();
+        runJob(dailyGoalResetJob, new JobParametersBuilder()
+                .addString("targetDate", targetDate.toString())
+                .toJobParameters());
     }
 
     @Scheduled(cron = "0 0 0 * * *")
@@ -47,7 +61,17 @@ public class BatchJobScheduler {
                 .toJobParameters());
     }
 
-    @Scheduled(cron = "0 15 0 * * *")
+    @Scheduled(cron = "0 0 0 * * MON")
+    public void runWeeklyGoalResetJob() {
+        LocalDate weekStart = LocalDate.now().with(DayOfWeek.MONDAY);
+        LocalDate weekEnd = weekStart.plusDays(6);
+        runJob(weeklyGoalResetJob, new JobParametersBuilder()
+                .addString("weekStart", weekStart.toString())
+                .addString("weekEnd", weekEnd.toString())
+                .toJobParameters());
+    }
+
+    @Scheduled(cron = "0 15 0 * * MON")
     public void runWeeklyReportJob() {
         LocalDate weekStart = LocalDate.now().minusWeeks(1).with(DayOfWeek.MONDAY);
         LocalDate weekEnd = weekStart.plusDays(6);

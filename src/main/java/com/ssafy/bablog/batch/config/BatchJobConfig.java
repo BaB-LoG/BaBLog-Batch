@@ -2,9 +2,7 @@ package com.ssafy.bablog.batch.config;
 
 import com.ssafy.bablog.batch.member.MemberIdProvider;
 import com.ssafy.bablog.batch.partition.MemberIdListPartitioner;
-import com.ssafy.bablog.batch.tasklet.CreateDailyMealsTasklet;
-import com.ssafy.bablog.batch.tasklet.GenerateDailyReportTasklet;
-import com.ssafy.bablog.batch.tasklet.GenerateWeeklyReportTasklet;
+import com.ssafy.bablog.batch.tasklet.*;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -17,9 +15,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-
-import javax.sql.DataSource;
 
 @Configuration
 @EnableBatchProcessing
@@ -35,9 +30,23 @@ public class BatchJobConfig {
     }
 
     @Bean
+    public Job dailyGoalResetJob(JobRepository jobRepository, Step resetDailyGoalsStep) {
+        return new JobBuilder("dailyGoalResetJob", jobRepository)
+                .start(resetDailyGoalsStep)
+                .build();
+    }
+
+    @Bean
     public Job dailyReportJob(JobRepository jobRepository, Step generateDailyReportPartitionStep) {
         return new JobBuilder("dailyReportJob", jobRepository)
                 .start(generateDailyReportPartitionStep)
+                .build();
+    }
+
+    @Bean
+    public Job weeklyGoalResetJob(JobRepository jobRepository, Step resetWeeklyGoalsStep) {
+        return new JobBuilder("weeklyGoalResetJob", jobRepository)
+                .start(resetWeeklyGoalsStep)
                 .build();
     }
 
@@ -88,10 +97,28 @@ public class BatchJobConfig {
     }
 
     @Bean
+    public Step resetDailyGoalsStep(JobRepository jobRepository,
+                                    ResourcelessTransactionManager transactionManager,
+                                    ResetDailyGoalsTasklet tasklet) {
+        return new StepBuilder("resetDailyGoalsStep", jobRepository)
+                .tasklet(tasklet, transactionManager)
+                .build();
+    }
+
+    @Bean
     public Step generateDailyReportWorkerStep(JobRepository jobRepository,
                                               ResourcelessTransactionManager transactionManager,
                                               GenerateDailyReportTasklet tasklet) {
         return new StepBuilder("generateDailyReportWorkerStep", jobRepository)
+                .tasklet(tasklet, transactionManager)
+                .build();
+    }
+
+    @Bean
+    public Step resetWeeklyGoalsStep(JobRepository jobRepository,
+                                     ResourcelessTransactionManager transactionManager,
+                                     ResetWeeklyGoalsTasklet tasklet) {
+        return new StepBuilder("resetWeeklyGoalsStep", jobRepository)
                 .tasklet(tasklet, transactionManager)
                 .build();
     }
